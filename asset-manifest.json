@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/elp-app/static/css/main.dc4f781f.chunk.css",
+    "main.js": "/elp-app/static/js/main.3aa121d3.chunk.js",
+    "main.js.map": "/elp-app/static/js/main.3aa121d3.chunk.js.map",
+    "runtime-main.js": "/elp-app/static/js/runtime-main.5096a03b.js",
+    "runtime-main.js.map": "/elp-app/static/js/runtime-main.5096a03b.js.map",
+    "static/js/2.3018b3a5.chunk.js": "/elp-app/static/js/2.3018b3a5.chunk.js",
+    "static/js/2.3018b3a5.chunk.js.map": "/elp-app/static/js/2.3018b3a5.chunk.js.map",
+    "static/js/3.4ba1b8b2.chunk.js": "/elp-app/static/js/3.4ba1b8b2.chunk.js",
+    "static/js/3.4ba1b8b2.chunk.js.map": "/elp-app/static/js/3.4ba1b8b2.chunk.js.map",
+    "index.html": "/elp-app/index.html",
+    "static/css/main.dc4f781f.chunk.css.map": "/elp-app/static/css/main.dc4f781f.chunk.css.map",
+    "static/js/2.3018b3a5.chunk.js.LICENSE.txt": "/elp-app/static/js/2.3018b3a5.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.5096a03b.js",
+    "static/js/2.3018b3a5.chunk.js",
+    "static/css/main.dc4f781f.chunk.css",
+    "static/js/main.3aa121d3.chunk.js"
+  ]
+}
