@@ -1,0 +1,25 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+.App:focus {
+  outline: none;
+}
+canvas {
+  border: solid rgb(0, 0, 0) 2px;
+}
+
+.canvas-container {
+  margin: 0 auto;
+  position: absolute;
+  background-color: rgb(246, 246, 246);
+  top: 100px;
+  width: 1591px;
+  height: 1242px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-container:focus {
+  outline: none;
+}

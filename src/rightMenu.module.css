@@ -1,0 +1,300 @@
+.library {
+  width: 25%;
+  position: fixed;
+  z-index: 3;
+  /*top: 100px;*/
+  left: 40px;
+  overflow-x: hidden;
+  /*padding-top: 20px; */
+  background: none;
+}
+.library:focus {
+  outline: none;
+}
+.menu {
+  height: 100%;
+  width: 200px;
+  position: fixed;
+  z-index: 3;
+  top: 50px;
+  left: 0;
+  overflow-x: hidden;
+}
+
+.right {
+  height: 100%;
+  width: 200px;
+  position: fixed;
+  z-index: 3;
+  top: 50px;
+  right: 0;
+  overflow-x: hidden;
+}
+
+.tab {
+  float: right;
+  border: 1px solid #ccc;
+  background-color: #003059;
+  width: 40px;
+  height: 40px;
+}
+
+.tableft {
+  float: left;
+  border: 1px solid #ccc;
+  background-color: #003059;
+  width: 40px;
+  height: 40px;
+}
+.tabspace {
+  float: right;
+  border: none;
+  width: 40px;
+  height: 20px;
+}
+.tab button {
+  display: block;
+  background-color: inherit;
+  color: black;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 17px;
+}
+.tableft button {
+  display: block;
+  background-color: inherit;
+  color: black;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 17px;
+}
+.tab button:hover {
+  background-color: rgb(255, 255, 255);
+}
+.tableft button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current "tab button" class */
+.tab button:active {
+  background-color: rgb(255, 255, 255);
+}
+.tableft button.active {
+  background-color: #ccc;
+}
+.tabbar {
+  float: left;
+  border: none;
+  width: 40px;
+  height: 450px;
+  background-color: #003059;
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+  z-index: 1;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  right: 110%;
+}
+.tooltip .tooltiptextleft {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+}
+.tooltip .tooltiptextB {
+  width: 120px;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+  visibility: hidden;
+  width: 120px;
+  background-color: none;
+  color: black;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+.tooltip:hover .tooltiptextB {
+  visibility: visible;
+}
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent black;
+  z-index: 1;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+.tooltip:hover .tooltiptextleft {
+  visibility: visible;
+}
+
+.btngroup button {
+  background-color: #003059; /* Green background */
+  border: 1px solid rgb(0, 55, 128); /* Green border */
+  color: white; /* White text */
+  padding: 5px 12px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+.sbtngroup button {
+  background-color: #003059;
+  /* Green background */
+  border: 1px solid rgb(0, 129, 204); /* Green border */
+  color: white; /* White text */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+}
+.btngroup:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.sbtngroup:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btngroup button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+.sbtngroup button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+/* Add a background color on hover */
+.btngroup button:hover {
+  background-color: #1db100;
+}
+/* Add a background color on hover */
+.sbtngroup button:hover {
+  background-color: #0060b4;
+}
+ul.a {
+  list-style-type: square;
+}
+li {
+  background-color: rgb(255, 255, 255);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(224, 224, 224);
+}
+.File {
+  position: relative;
+  left: 0;
+  top: 50px;
+  width: 55%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+  /*margin-top: 5px;*/
+  border-style: solid;
+}
+.CanvasSet {
+  position: relative;
+  left: 0;
+  top: 85px;
+  width: 60%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+  border-style: solid;
+}
+.LayerSet {
+  position: relative;
+  left: 0;
+  top: 120px;
+  width: 95%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+  border-style: solid;
+}
+.Warehouse {
+  position: relative;
+  left: 0;
+  top: 155px;
+  width: 95%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+
+  border-style: solid;
+}
+.Phases {
+  position: relative;
+  left: 0;
+  top: 190px;
+  width: 70%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+
+  border-style: solid;
+}
+.Measures {
+  position: relative;
+  left: 0;
+  top: 225px;
+  width: 90%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+
+  border-style: solid;
+}
+.Animation {
+  position: relative;
+  left: 0;
+  top: 260px;
+  width: 96%;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  background-color: rgb(224, 224, 224);
+
+  border-style: solid;
+}
