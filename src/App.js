@@ -1,12 +1,108 @@
 import React, { useRef, useState } from "react";
 import { fabric } from "fabric";
 import { SketchPicker } from "react-color";
+import Picker from "../src/components/Picker/Picker";
 import MediaQuery from "react-responsive";
+import { useMediaQuery } from "react-responsive";
 import reactCSS from "reactcss";
+
+import imgUndo from "./images/undo2.png";
+import imgRedo from "./images/redo2.png";
+import imgDelete from "./images/delete2.png";
+import imglineWidth from "./images/lineWidth2.png";
+import imgStroke1 from "./images/stroke1.png";
+import imgStroke2 from "./images/stroke2.png";
+import imgStroke4 from "./images/stroke4.png";
+import imgStroke5 from "./images/stroke5.png";
+import imgStroke10 from "./images/stroke10.png";
+import imgStroke12 from "./images/stroke12.png";
+import imgStroke15 from "./images/stroke15.png";
+import imgStroke20 from "./images/stroke20.png";
+import imgStroke25 from "./images/stroke25.png";
+import imgLineStyle from "./images/LineStyle2.png";
+import imgLineStyle1 from "./images/lineStyle1.png";
+import imgLineStyle2 from "./images/lineStyle2png.png";
+import imgLineStyle3 from "./images/lineStyle3.png";
+import imgLineStyle4 from "./images/lineStyle4.png";
+import imgLineStyle5 from "./images/lineStyle5.png";
+import imgLineStyle6 from "./images/lineStyle6.png";
+import imgLineStyle7 from "./images/lineStyle7.png";
+import imgText from "./images/TextBox2.png";
+import imgFreeHand from "./images/PenTool2.png";
+import imgSelection from "./images/Select2.png";
+import imgCloud from "./images/Cloud2.png";
+import imgCallout from "./images/CallOut2.png";
+import imgImageEdit from "./images/Image2.png";
+import imgLine from "./images/Line2.png";
+import imgPolyline from "./images/Polyline2.png";
+import imgArrow from "./images/Arrow2.png";
+import imgArc from "./images/Arc2.png";
+import imgRect from "./images/Rectangle2.png";
+import imgPolygon from "./images/Polygon2.png";
+import imgRPolygon from "./images/RPolygon2.png";
+import imgCircle from "./images/Circle2.png";
+import imgEllipse from "./images/Ellipse2.png";
+import imgDimension from "./images/Dimension2.png";
+import imgArea from "./images/Area2.png";
+import imgLength from "./images/Length2.png";
+import imgPerimeter from "./images/Perimeter2.png";
+import imgDropper from "./images/dropper2.png";
+import imgNoStroke from "./images/noStroke2.png";
+import imgNoFill from "./images/noFill2.png";
+import imgFileAccess from "./images/FileAccess2.png";
+import imgNewFile from "./images/NewFile2.png";
+import imgOpenFile from "./images/OpenFile2.png";
+import imgRecentFile from "./images/recentFile2.png";
+import imgCanvasSettings from "./images/Canvas2.png";
+import imgCanvasSize from "./images/CanvasSize2.png";
+import imgCanvasColor from "./images/CanvasColor2.png";
+import imgCanvasImage from "./images/CanvasImage2.png";
+import imgLayers from "./images/Layers2.png";
+import imgLayerBefore from "./images/InsertBefore2.png";
+import imgLayerAfter from "./images/InsertAfter2.png";
+import imgLayerUp from "./images/Up2.png";
+import imgLayerDown from "./images/Down2.png";
+import imgLayerHide from "./images/Hide2.png";
+import imgLayerLock from "./images/Lock2.png";
+import imgLayerSort from "./images/SortAlpha2.png";
+import imgWarehouse from "./images/Warehouse2.png";
+import imgCrane from "./images/Crane2.png";
+import imgElevator from "./images/Elevator2.png";
+import imgLabels from "./images/labels2.png";
+import imgCloud2 from "./images/CloudTool2.png";
+import imgWedge from "./images/wedge2.png";
+import imgRing from "./images/Ring2.png";
+import imgFilledArc from "./images/FilledArc2.png";
+import imgPhase from "./images/Phases2.png";
+import imgNewPhase from "./images/NewPhase2.png";
+import imgPhaseStart from "./images/StartDate2.png";
+import imgPhaseEnd from "./images/EndDate2.png";
+import imgPhaseDelete from "./images/DeletePhase2.png";
+import imgMeasurement from "./images/Measure2.png";
+import imgPageScale from "./images/PageScale2.png";
+import imgSetUnits from "./images/setunit2.png";
+import imgAnimation from "./images/Animation2.png";
+import imgPlay from "./images/Play2.png";
 
 import "./styles.css";
 import styles from "./rightMenu.module.css";
 import tbStyles from "./toolbar.module.css";
+import styled from "styled-components";
+
+export const Backdrop = styled.div.attrs((p) => ({
+  style: {
+    zIndex: p.zIndex,
+    display: p.show ? "block" : "none",
+    background: p.backdrop ? "rgba(0, 0, 0, 0.1)" : "transparent",
+  },
+}))`
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+`;
 
 const initialState = {
   version: "3.6.3",
@@ -182,15 +278,66 @@ const fontCheck = new Set(
 // Or you can use:
 // const fabric = require("fabric").fabric;
 //const canvas = new fabric.Canvas("my-fabric-canvas");
+function getWindowDimensions() {
+  const { innerWidth: width, innerHeight: height } = window;
+  return {
+    width,
+    height,
+  };
+}
+function determineAdjustedCoords(fromX, fromY, toX, toY) {
+  // this function uses the last point plotted, the length of the lines to the new x and y coords (using toX and toY) to determine an adjusted rubber band end-point
+
+  // find the angle subtended by the current rubber band line i.e. unadjusted (as dictated by the actual mouse coords) and the x axis
+  // var xLen = Math.abs(toX - fromX);
+  // var yLen = Math.abs(toY - fromY);
+  var xLen = toX - fromX;
+  var yLen = toY - fromY;
+  // if x or y difference is zero then no action needed so return
+  if (xLen === 0 && yLen === 0) return;
+  var theta = Math.atan(yLen / xLen) * (180 / Math.PI);
+  // find the hypontenuse of the triangle bounded by the x axis and the actual rubber band line - this will also be the hypontenuse of the adjusted rubber band line
+  var hyp;
+  // verify if any of the components are zero
+  if (Math.sin(theta * (Math.PI / 180)) === 0) hyp = xLen;
+  else {
+    if (yLen === 0) hyp = xLen;
+    else hyp = yLen / Math.sin(theta * (Math.PI / 180));
+  }
+  // find which sector the angle lies in and round it to the nearest sector
+  var sector = Math.round(theta / 15);
+  // find the angle subtended by the adjusted rubber band line (as dictated by the coords we are trying to determine)
+  var thetaNew = sector * 15;
+  // find new x and y coords of the adjusted rubber band line end points
+  var xNew = Math.cos(thetaNew * (Math.PI / 180)) * hyp;
+  var yNew = Math.sin(thetaNew * (Math.PI / 180)) * hyp;
+  // required coords equal the new coords added to the last point plotted (fromX,fromY)
+  var px = fromX + Math.round(xNew);
+  var py = fromY + Math.round(yNew);
+
+  return { tx: px, ty: py };
+}
 const App = () => {
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 1224px)",
+  });
+  const isBigScreen = useMediaQuery({ query: "(min-width: 1824px)" });
+  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
+  const isPortrait = useMediaQuery({ query: "(orientation: portrait)" });
+  const isRetina = useMediaQuery({ query: "(min-resolution: 2dppx)" });
   //const mforceUpdate = useForceUpdate();
   // for undo/redoing
   const [past, setPast] = useState([initialState]);
   const [future, setFuture] = useState([initialState]);
+  const [windowDimensions, setWindowDimensions] = useState(
+    getWindowDimensions()
+  );
   //const [newAction, setNewAction] = useState(0);
   const [pageLoad, setPageLoad] = useState(null);
   // const canvasRender = useRef(0);
+  const mouseMoving = useRef(false);
   const canvasRef = useRef();
+  const containerRef = useRef();
   const mainDiv = useRef(null);
   const rightBar = useRef();
   const shapeCount = useRef(0);
@@ -199,12 +346,20 @@ const App = () => {
   const editPoly = useRef(true);
   const openPoly = useRef(null);
   const polyType = useRef("");
+  const someValue = useRef(0.0);
+  const activeObjectStrokeRef = useRef(null);
+  const activeObjectFillRef = useRef(null);
+  const imgFileRef = useRef(null);
+  const imageData = useRef(null);
   //const [reRender, forceUpdate] = useReducer((x) => x + 1, 0);
   //const forceUpdate = React.useReducer(() => ({}))[1];
   //const [, updateComponent] = React.useState();
   //const forceUpdateComponent = React.useCallback(() => updateComponent({}), []);
   //anchors
   const [canvas, setCanvas] = useState();
+
+  const [pickerStroke, setPickerColorStroke] = useState(`rgba(0, 0, 0, 1)`);
+  const [pickerFill, setPickerColorFill] = useState(`rgba(0, 0, 0, 1)`);
   //const [canvasHistory, setCanvasHistory] = useState([initialState]);
   //const [canvasHistory, setCanvasHistory] = useState([]);
   // const [canvasState, setCanvasState] = useState(initialState);
@@ -262,6 +417,7 @@ const App = () => {
   const Rectangle = useRef(null);
   const circle = useRef(null);
   const ellipse = useRef(null);
+  const polyLine = useRef(null);
   const polyLines = useRef([]);
   const currentToolId = useRef(null);
 
@@ -316,17 +472,20 @@ const App = () => {
   const StrokeSwatchChange = (color) => {
     //console.log(stroke);
     setStrokeColor(color.rgb);
+    // setShapeAttributes({
+    //   stroke:
+    //     "rgba(" +
+    //     color.rgb.r +
+    //     ", " +
+    //     color.rgb.g +
+    //     ", " +
+    //     color.rgb.b +
+    //     ", " +
+    //     color.rgb.a +
+    //     ")",
+    // });
     setShapeAttributes({
-      stroke:
-        "rgba(" +
-        color.rgb.r +
-        ", " +
-        color.rgb.g +
-        ", " +
-        color.rgb.b +
-        ", " +
-        color.rgb.a +
-        ")",
+      stroke: pickerStroke,
     });
   };
   const FillSwatchChange = (color) => {
@@ -411,6 +570,41 @@ const App = () => {
   );
 */
   React.useEffect(() => {
+    // window.localStorage.setItem("colors", JSON.stringify(colors));
+    // setShapeAttributes({
+    //   stroke: pickerStroke,
+    // });
+    if (canvas === undefined) return;
+    var activeShape = canvas.getActiveObject();
+    if (activeShape) {
+      // if (activeShape.stroke === "rgba(255,255,255,0)") {
+      // setStrokeColor({ r: 255, g: 255, b: 255, a: 1 });
+      setShapeAttributes({
+        stroke: pickerStroke,
+      });
+      // }
+    }
+    // console.log(pickerStroke);
+  }, [pickerStroke, setPickerColorStroke, canvas]);
+  React.useEffect(() => {
+    // window.localStorage.setItem("colors", JSON.stringify(colors));
+    // setShapeAttributes({
+    //   stroke: pickerStroke,
+    // });
+    if (canvas === undefined) return;
+    var activeShape = canvas.getActiveObject();
+    if (activeShape) {
+      // if (activeShape.stroke === "rgba(255,255,255,0)") {
+      // setStrokeColor({ r: 255, g: 255, b: 255, a: 1 });
+      setShapeAttributes({
+        fill: pickerFill,
+      });
+      // }
+    }
+    // console.log(pickerStroke);
+  }, [pickerFill, setPickerColorFill, canvas]);
+
+  React.useEffect(() => {
     /*
     ---disabled for memory issues--
     var history = JSON.parse(sessionStorage.getItem("history")); //get them back    
@@ -433,9 +627,11 @@ const App = () => {
     //console.log("shift pressed");
     const canvas = new fabric.Canvas(canvasRef.current);
     canvas.set({
+      fireRightClick: true,
       fireMiddleClick: true, // <-- enable firing of middle click events
       stopContextMenu: true,
       controlsAboveOverlay: false,
+      targetFindTolerance: 15,
       preserveObjectStacking: true,
       perPixelTargetFind: true,
     });
@@ -443,6 +639,7 @@ const App = () => {
       setPageLoad(1);
       //console.log(sessionStorage.myFabricJSCanvas);
       const data = JSON.parse(sessionStorage.myFabricJSCanvas);
+      console.log(data);
       canvas.loadFromJSON(data);
       canvas.forEachObject(function (o) {
         if (o.name.includes("anchor")) {
@@ -463,6 +660,56 @@ const App = () => {
       canvas.loadFromJSON(past[past.length - 1]);
     }
     canvas.renderAll();
+
+    function handleResize() {
+      const ratio = canvas.getWidth() / canvas.getHeight();
+      const containerWidth =
+        containerRef.current.clientWidth > 1191
+          ? 1191
+          : containerRef.current.clientWidth - 100;
+      const containerHeight = containerRef.current.clientHeight - 100;
+      const scale = containerWidth / canvas.getWidth();
+      const zoom = canvas.getZoom() * scale;
+      canvas.setDimensions({
+        width: containerWidth,
+        height: containerWidth / ratio,
+      });
+      canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    function handleImageFileLoad(e) {
+      var file = e.target.files[0];
+      var reader = new FileReader();
+      reader.onload = function (f) {
+        imageData.current = f.target.result;
+        if (imageData.current !== null) {
+          new fabric.Image.fromURL(imageData.current, (img) => {
+            var oImg = img.set({
+              left: pointer.current.x,
+              top: pointer.current.y,
+              angle: 0,
+              name: "shape-image-" + shapeCount.current,
+              // width: canvas.getWidth(),
+              // height: canvas.getHeight(),
+            });
+            shapeCount.current = shapeCount.current + 1;
+            canvas.add(oImg);
+            canvas.renderAll();
+            // newShape.current = true;
+            const newCanvasState = canvas.toJSON(["name"]);
+            saveCanvasState(newCanvasState);
+            //setImgURL("");
+          });
+          imageData.current = null;
+        }
+      };
+      if (file) reader.readAsDataURL(file);
+    }
+
+    imgFileRef.current.addEventListener("change", handleImageFileLoad);
+
     editPoly.current = true;
     if (canvasTool === "pen") {
       canvas.isDrawingMode = 1;
@@ -521,6 +768,10 @@ const App = () => {
       options.target.set({
         angle: angle,
       });
+    });
+    canvas.on("before:render", function () {
+      var ctx = canvas.getSelectionContext();
+      if (ctx) canvas.clearContext(ctx);
     });
     //canvas.on("object:added", onObjectModified);
     // canvas.on("object:modified", onObjectModified);
@@ -583,7 +834,7 @@ const App = () => {
         canvas.add(polyGon);
         editPoly.current = true;
         canvas.setActiveObject(polyGon);
-        document.getElementById("select").click();
+        // document.getElementById("select").click();
         canvas.renderAll();
         shapeCount.current++;
         const newCanvasState = canvas.toJSON(["name"]);
@@ -616,7 +867,7 @@ const App = () => {
         });
         canvas.add(polyLine);
         canvas.setActiveObject(polyLine);
-        document.getElementById("select").click();
+        // document.getElementById("select").click();
         editPoly.current = true;
         canvas.renderAll();
         shapeCount.current++;
@@ -815,8 +1066,11 @@ const App = () => {
         }
       }
     });
-
+    // canvas.on("dragenter", function (options) {
+    //   alert("draggin");
+    // });
     canvas.on("object:moving", function (options) {
+      // if (options.e.altKey) alert("moving");
       if (options.target.type !== "circle") {
         if (openPoly.current !== null) {
           openPoly.current = null;
@@ -895,7 +1149,13 @@ const App = () => {
     canvas.on("mouse:up", function (e) {
       this.setViewportTransform(this.viewportTransform);
       this.isDragging = false;
+      mouseMoving.current = false;
       if (e.button === 2) return;
+      // if (e.button === 3) {
+      //   setActiveTool(e, "select");
+      //   setCanvas("select");
+      //   return;
+      // }
       // this.selection = true;
       if (canvas.isDrawingMode) {
         var allObjects = canvas.getObjects();
@@ -904,7 +1164,7 @@ const App = () => {
         //console.log(path);
         shapeCount.current = shapeCount.current + 1;
         canvas.selection = true;
-        document.getElementById("select").click();
+        // document.getElementById("select").click();
         canvas.setActiveObject(allObjects[allObjects.length - 1]);
         canvas.renderAll();
         const newCanvasState = canvas.toJSON(["name"]);
@@ -915,7 +1175,7 @@ const App = () => {
       if (canvasTool === "text") {
         //console.log(canvas.getObjects());
         pointer.current = canvas.getPointer(e);
-        var text = new fabric.IText("Click to edit", {
+        var text = new fabric.IText("Esc to edit", {
           left: pointer.current.x,
           top: pointer.current.y,
           fontFamily: "Arial",
@@ -929,14 +1189,21 @@ const App = () => {
         });
         //console.log(text);
         canvas.add(text);
-        document.getElementById("select").click();
+        // document.getElementById("select").click();
         canvas.setActiveObject(text);
         canvas.renderAll();
+
         shapeCount.current = shapeCount.current + 1;
         // Save the canvas to State variable
         const newCanvasState = canvas.toJSON(["name"]);
 
         saveCanvasState(newCanvasState);
+      }
+      if (canvasTool === "image") {
+        pointer.current = canvas.getPointer(e);
+        newShape.current = true;
+        //var fileupload = document.getElementById("FileUpload1");
+        imgFileRef.current.click();
       }
       if (canvasTool === "line") {
         if (newShape.current) {
@@ -949,29 +1216,38 @@ const App = () => {
           ];
           line.current = new fabric.Line(points, {
             strokeWidth: strokeWidth,
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            stroke: pickerStroke,
             originX: "center",
             originY: "center",
+            padding: 15,
             //selectable: false,
             hoverCursor: "default",
             name: "shape-line-" + shapeCount.current,
           });
           canvas.add(line.current);
+
           shapeCount.current = shapeCount.current + 1;
           newShape.current = false;
         } else {
           pointer.current = canvas.getPointer(e);
-          line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
-          document.getElementById("select").click();
+          if (e.e.shiftKey) {
+            var { tx, ty } = determineAdjustedCoords(
+              line.current.x1,
+              line.current.y1,
+              pointer.current.x,
+              pointer.current.y
+            );
+            line.current.set({ x2: tx, y2: ty });
+            // var deltaX = Math.abs(pointer.current.x - line.current.x1);
+            // var deltaY = Math.abs(pointer.current.y - line.current.y1);
+            // if (deltaX > deltaY)
+            //   line.current.set({ x2: pointer.current.x, y2: line.current.y1 });
+            // if (deltaY > deltaX)
+            //   line.current.set({ x2: line.current.x1, y2: pointer.current.y });
+          } else
+            line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
+          // line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
+          // document.getElementById("select").click();
           canvas.setActiveObject(line.current);
           canvas.renderAll();
           newShape.current = true;
@@ -990,17 +1266,11 @@ const App = () => {
             pointer.current.y,
           ];
           line.current = new fabric.Line(arrowLinePoints, {
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
+            originX: "center",
+            originY: "center",
+            padding: 15,
           });
           // reference points for arrowhead
           origX.current = line.current.x2;
@@ -1014,32 +1284,14 @@ const App = () => {
 
           arrow.current = new fabric.Triangle({
             angle: angle.current,
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
+            fill: pickerFill,
             top: line.current.y2,
             left: line.current.x2,
             width: 15,
             height: 15,
             originX: "center",
             originY: "center",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
           });
           canvas.add(line.current);
@@ -1056,6 +1308,8 @@ const App = () => {
               hasControls: true,
               selectable: false,
               hoverCursor: "default",
+              originX: "center",
+              originY: "center",
             }
           );
           shapeCount.current = shapeCount.current + 1;
@@ -1065,7 +1319,7 @@ const App = () => {
           );
           canvas.add(selectedShape.current);
           canvas.setActiveObject(selectedShape.current);
-          document.getElementById("select").click();
+          // document.getElementById("select").click();
           newShape.current = true;
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1088,16 +1342,7 @@ const App = () => {
               pointer.current.y,
             ],
             {
-              stroke:
-                "rgba(" +
-                stroke.r +
-                ", " +
-                stroke.g +
-                ", " +
-                stroke.b +
-                ", " +
-                stroke.a +
-                ")",
+              stroke: pickerStroke,
               strokeWidth: strokeWidth,
               hasControls: false,
               hasBorders: false,
@@ -1107,6 +1352,7 @@ const App = () => {
               hoverCursor: "default",
               originX: "center",
               originY: "center",
+              padding: 15,
             }
           );
           canvas.add(line.current);
@@ -1142,16 +1388,7 @@ const App = () => {
             var newPolyLine = new fabric.Line(
               [startPoint.x, startPoint.y, endPoint.x, endPoint.y],
               {
-                stroke:
-                  "rgba(" +
-                  stroke.r +
-                  ", " +
-                  stroke.g +
-                  ", " +
-                  stroke.b +
-                  ", " +
-                  stroke.a +
-                  ")",
+                stroke: pickerStroke,
                 strokeWidth: strokeWidth,
                 hasControls: false,
                 hasBorders: false,
@@ -1161,6 +1398,7 @@ const App = () => {
                 hoverCursor: "default",
                 originX: "center",
                 originY: "center",
+                padding: 15,
               }
             );
             var distance = Math.sqrt(
@@ -1188,40 +1426,23 @@ const App = () => {
                 }
                 newShape.current = true;
                 isDrawing.current = false;
-                var polyLine = null;
+                polyLine.current = null;
                 polyPoints.current.pop();
                 polyPoints.current.push(polyPoints.current[0]);
                 console.log(polyPoints.current);
-                polyLine = new fabric.Polygon(polyPoints.current, {
-                  stroke:
-                    "rgba(" +
-                    stroke.r +
-                    ", " +
-                    stroke.g +
-                    ", " +
-                    stroke.b +
-                    ", " +
-                    stroke.a +
-                    ")",
-                  fill:
-                    "rgba(" +
-                    fill.r +
-                    ", " +
-                    fill.g +
-                    ", " +
-                    fill.b +
-                    ", " +
-                    fill.a +
-                    ")",
+                polyLine.current = new fabric.Polygon(polyPoints.current, {
+                  stroke: pickerStroke,
+                  fill: pickerFill,
                   strokeWidth: strokeWidth,
+                  padding: 15,
                   selectable: false,
                   hoverCursor: "default",
                   name: "shape-polygon-" + shapeCount.current,
                 });
-                console.log(fill);
-                canvas.add(polyLine);
-                canvas.setActiveObject(polyLine);
-                document.getElementById("select").click();
+                // console.log(fill);
+                canvas.add(polyLine.current);
+                canvas.setActiveObject(polyLine.current);
+                // document.getElementById("select").click();
                 editPoly.current = true;
                 canvas.renderAll();
                 shapeCount.current++;
@@ -1253,17 +1474,9 @@ const App = () => {
               pointer.current.y,
             ],
             {
-              stroke:
-                "rgba(" +
-                stroke.r +
-                ", " +
-                stroke.g +
-                ", " +
-                stroke.b +
-                ", " +
-                stroke.a +
-                ")",
+              stroke: pickerStroke,
               strokeWidth: strokeWidth,
+              padding: 15,
               hasControls: false,
               hasBorders: false,
               selectable: false,
@@ -1286,17 +1499,9 @@ const App = () => {
             newPolyLine = new fabric.Line(
               [startPoint.x, startPoint.y, endPoint.x, endPoint.y],
               {
-                stroke:
-                  "rgba(" +
-                  stroke.r +
-                  ", " +
-                  stroke.g +
-                  ", " +
-                  stroke.b +
-                  ", " +
-                  stroke.a +
-                  ")",
+                stroke: pickerStroke,
                 strokeWidth: strokeWidth,
+                padding: 15,
                 hasControls: false,
                 hasBorders: false,
                 selectable: false,
@@ -1329,30 +1534,13 @@ const App = () => {
               top: origY.current,
               originX: "center",
               originY: "center",
-              fill:
-                "rgba(" +
-                fill.r +
-                ", " +
-                fill.g +
-                ", " +
-                fill.b +
-                ", " +
-                fill.a +
-                ")",
+              fill: pickerFill,
               perPixelTargetFind: false,
               strokeWidth: strokeWidth,
-              stroke:
-                "rgba(" +
-                stroke.r +
-                ", " +
-                stroke.g +
-                ", " +
-                stroke.b +
-                ", " +
-                stroke.a +
-                ")",
+              stroke: pickerStroke,
               hasControls: false,
               hasBorders: false,
+              padding: 15,
               name: "shape-rpolygon-" + shapeCount.current,
             }
           );
@@ -1375,35 +1563,24 @@ const App = () => {
             });
           canvas.remove(rpolygon.current);
           var updatedPoly = new fabric.Polygon(transformedPoints, {
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            fill: pickerFill,
+            stroke: pickerStroke,
+            padding: 15,
             name: "shape-rpolygon-" + shapeCount.current,
             // hasControls: false,
             // hasBorders: false,
             //selectable: false,
             hoverCursor: "default",
           });
+          updatedPoly.set({
+            originX: "center",
+            originY: "center",
+            left: origX.current + updatedPoly.width / 2,
+            top: origY.current + updatedPoly.height / 2,
+          });
           canvas.add(updatedPoly);
           canvas.setActiveObject(updatedPoly);
-          document.getElementById("select").click();
+          //  document.getElementById("select").click();
           canvas.renderAll();
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1418,38 +1595,24 @@ const App = () => {
           Rectangle.current = new fabric.Rect({
             left: origX.current,
             top: origY.current,
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            fill: pickerFill,
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
+            padding: 15,
             strokeDashArray: [dashSize, gapSize],
+            centeredScaling: true,
             opacity: opacity,
             selectable: false,
             hoverCursor: "default",
             name: "shape-rect-" + shapeCount.current,
           });
           shapeCount.current++;
+
           canvas.add(Rectangle.current);
           newShape.current = false;
         } else {
           pointer.current = canvas.getPointer(e);
+
           if (origX.current > pointer.current.x) {
             Rectangle.current.set({ left: Math.abs(pointer.current.x) });
           }
@@ -1462,9 +1625,16 @@ const App = () => {
           Rectangle.current.set({
             height: Math.abs(origY.current - pointer.current.y),
           });
+          Rectangle.current.set({
+            originX: "center",
+            originY: "center",
+            left: origX.current + Rectangle.current.width / 2,
+            top: origY.current + Rectangle.current.height / 2,
+          });
           newShape.current = true;
           canvas.setActiveObject(Rectangle.current);
-          document.getElementById("select").click();
+
+          //  document.getElementById("select").click();
           canvas.renderAll();
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1485,27 +1655,10 @@ const App = () => {
             angle: 45,
             startAngle: 0,
             endAngle: Math.PI,
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            fill: pickerFill,
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
+            padding: 15,
             selectable: false,
             hoverCursor: "default",
             name: "shape-arc-" + shapeCount.current,
@@ -1537,7 +1690,7 @@ const App = () => {
           }
           newShape.current = true;
           canvas.setActiveObject(circle.current);
-          document.getElementById("select").click();
+          // document.getElementById("select").click();
           canvas.renderAll();
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1556,27 +1709,10 @@ const App = () => {
             originY: "top",
             radius: pointer.current.x - origX.current,
             angle: 0,
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            fill: pickerFill,
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
+            padding: 15,
             selectable: false,
             hoverCursor: "default",
             name: "shape-circle-" + shapeCount.current,
@@ -1591,9 +1727,11 @@ const App = () => {
               Math.abs(origY.current - pointer.current.y),
               Math.abs(origX.current - pointer.current.x)
             ) / 2;
+
           if (radius > circle.current.strokeWidth) {
             radius -= circle.current.strokeWidth / 2;
           }
+          radius += someValue.current;
           circle.current.set({ radius: radius });
 
           if (origX.current > pointer.current.x) {
@@ -1606,9 +1744,15 @@ const App = () => {
           } else {
             circle.current.set({ originY: "top" });
           }
+          circle.current.set({
+            originX: "center",
+            originY: "center",
+            left: origX.current + circle.current.radius,
+            top: origY.current + circle.current.radius,
+          });
           newShape.current = true;
           canvas.setActiveObject(circle.current);
-          document.getElementById("select").click();
+          //  document.getElementById("select").click();
           canvas.renderAll();
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1628,27 +1772,10 @@ const App = () => {
             rx: pointer.current.x - origX.current,
             ry: pointer.current.y - origY.current,
             angle: 0,
-            fill:
-              "rgba(" +
-              fill.r +
-              ", " +
-              fill.g +
-              ", " +
-              fill.b +
-              ", " +
-              fill.a +
-              ")",
-            stroke:
-              "rgba(" +
-              stroke.r +
-              ", " +
-              stroke.g +
-              ", " +
-              stroke.b +
-              ", " +
-              stroke.a +
-              ")",
+            fill: pickerFill,
+            stroke: pickerStroke,
             strokeWidth: strokeWidth,
+            padding: 15,
             type: "ellipse",
             selectable: false,
             hoverCursor: "default",
@@ -1660,6 +1787,8 @@ const App = () => {
           pointer.current = canvas.getPointer(e);
           var rx = Math.abs(origX.current - pointer.current.x) / 2;
           var ry = Math.abs(origY.current - pointer.current.y) / 2;
+          rx += someValue.current;
+          ry += someValue.current;
           if (rx > ellipse.current.strokeWidth) {
             rx -= ellipse.current.strokeWidth / 2;
           }
@@ -1678,9 +1807,15 @@ const App = () => {
           } else {
             ellipse.current.set({ originY: "top" });
           }
+          ellipse.current.set({
+            originX: "center",
+            originY: "center",
+            left: origX.current + ellipse.current.rx,
+            top: origY.current + ellipse.current.ry,
+          });
           newShape.current = true;
           canvas.setActiveObject(ellipse.current);
-          document.getElementById("select").click();
+          // document.getElementById("select").click();
           canvas.renderAll();
           // Save the canvas to State variable
           const newCanvasState = canvas.toJSON(["name"]);
@@ -1689,7 +1824,7 @@ const App = () => {
       }
       //check if user clicked an object
       if (e.target) {
-        var evt = e.e;
+        evt = e.e;
         if (evt.altKey === true) {
           if (e.target.name.includes("anchor")) {
             console.log(e.target);
@@ -1735,25 +1870,57 @@ const App = () => {
         //if (activeShape.length > 1) return;
         //        console.log(activeShape.type);
         if (activeShape) {
-          if (activeShape.stroke && activeShape.type !== "i-text") {
-            if (currentStroke.current !== null) {
-              var rgba = currentStroke.current
-                .substr(5)
-                .split(")")[0]
-                .split(",");
-              setStrokeColor({
-                r: rgba[0],
-                g: rgba[1],
-                b: rgba[2],
-                a: rgba[3],
-              });
+          console.log(activeShape);
+          // if (activeShape.stroke && activeShape.type !== "i-text") {
+          //   if (currentStroke.current !== null) {
+          //     var rgba = currentStroke.current
+          //       .substr(5)
+          //       .split(")")[0]
+          //       .split(",");
+          //     setStrokeColor({
+          //       r: rgba[0],
+          //       g: rgba[1],
+          //       b: rgba[2],
+          //       a: rgba[3],
+          //     });
+          //     //if()
+          //     console.log(activeShape.stroke);
+          //     setPickerColor(activeShape.stroke);
+
+          //     currentStroke.current = activeShape.stroke;
+          //     // activeObjectStrokeRef.current();
+          //     if (activeObjectStrokeRef?.current) {
+          //       activeObjectStrokeRef.current(activeShape.stroke);
+          //     }
+          //   }
+          //   setStrokeWidth(activeShape.strokeWidth);
+          // } else {
+          //   if (activeObjectStrokeRef?.current) {
+          //     activeObjectStrokeRef.current("nill");
+          //   }
+          // }
+          if (activeShape.stroke !== null && activeShape.type !== "i-text") {
+            // setPickerColorStroke(activeShape.stroke);
+            if (activeObjectStrokeRef?.current) {
+              activeObjectStrokeRef.current(activeShape.stroke);
             }
-            setStrokeWidth(activeShape.strokeWidth);
+          } else {
+            if (activeObjectStrokeRef?.current) {
+              activeObjectStrokeRef.current("nill");
+            }
           }
           if (activeShape.fill) {
-            console.log(activeShape.fill);
-            rgba = activeShape.fill.substr(5).split(")")[0].split(",");
-            setFillColor({ r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3] });
+            // setPickerColorFill(activeShape.fill);
+            if (activeObjectFillRef?.current) {
+              activeObjectFillRef.current(activeShape.fill);
+            }
+          } else {
+            if (activeObjectFillRef?.current) {
+              activeObjectFillRef.current("nill");
+            }
+            // console.log(activeShape.fill);
+            // rgba = activeShape.fill.substr(5).split(")")[0].split(",");
+            // setFillColor({ r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3] });
           }
           //console.log(activeShape.opacity);
           if (Number.isNaN(activeShape.opacity)) setOpacity(100);
@@ -1793,6 +1960,7 @@ const App = () => {
         }
       }
     });
+    //object.on
     canvas.on("mouse:down", function (opt) {
       if (canvasTool !== "select") {
         this.selection = false;
@@ -1803,6 +1971,42 @@ const App = () => {
         this.selection = false;
         this.lastPosX = evt.clientX;
         this.lastPosY = evt.clientY;
+      }
+      // if (opt.button === 3) {
+      //   setCanvasTool("select");
+      //   setActiveTool(evt, "select");
+      //   //document.getElementById("select").click();
+      //   // canvas.renderAll();
+      //   //this.selection = true;
+      //   canvasRef.current.click();
+
+      //   //return;
+      // }
+      if (opt.e.altKey) {
+        if (evt.target) {
+          var temp, oObjectType;
+          var oObject = canvas.getActiveObject();
+
+          if (oObject) {
+            oObjectType = oObject.get("type");
+            oObject.clone(function (cloned) {
+              temp = cloned;
+            });
+            shapeCount.current = shapeCount.current + 1;
+            temp.set({
+              hasControls: false,
+              hasBorders: false,
+              name: oObjectType + shapeCount.current,
+            });
+
+            canvas.add(temp);
+            canvas.renderAll();
+
+            // Save the canvas to State variable
+            const newCanvasState = canvas.toJSON(["name"]);
+            saveCanvasState(newCanvasState);
+          }
+        }
       }
     });
     canvas.on("mouse:move", function (opt) {
@@ -1819,6 +2023,7 @@ const App = () => {
         return;
       }
       if (canvasTool === "rect") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
         if (origX.current > pointer.current.x) {
           Rectangle.current.set({ left: Math.abs(pointer.current.x) });
@@ -1835,16 +2040,47 @@ const App = () => {
         canvas.requestRenderAll();
       }
       if (canvasTool === "line") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
-        line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
+        if (opt.e.shiftKey) {
+          var { tx, ty } = determineAdjustedCoords(
+            line.current.x1,
+            line.current.y1,
+            pointer.current.x,
+            pointer.current.y
+          );
+          line.current.set({ x2: tx, y2: ty });
+          // var deltaX = Math.abs(pointer.current.x - line.current.x1);
+          // var deltaY = Math.abs(pointer.current.y - line.current.y1);
+          // if (deltaX > deltaY)
+          //   line.current.set({ x2: pointer.current.x, y2: line.current.y1 });
+          // if (deltaY > deltaX)
+          //   line.current.set({ x2: line.current.x1, y2: pointer.current.y });
+        } else
+          line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
+
         canvas.renderAll();
       }
       if (canvasTool === "arrow") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
-        line.current.set({
-          x2: pointer.current.x,
-          y2: pointer.current.y,
-        });
+        if (opt.e.shiftKey) {
+          var { tx, ty } = determineAdjustedCoords(
+            line.current.x1,
+            line.current.y1,
+            pointer.current.x,
+            pointer.current.y
+          );
+          line.current.set({ x2: tx, y2: ty });
+          // var deltaX = Math.abs(pointer.current.x - line.current.x1);
+          // var deltaY = Math.abs(pointer.current.y - line.current.y1);
+          // if (deltaX > deltaY)
+          //   line.current.set({ x2: pointer.current.x, y2: line.current.y1 });
+          // if (deltaY > deltaX)
+          //   line.current.set({ x2: line.current.x1, y2: pointer.current.y });
+        } else
+          line.current.set({ x2: pointer.current.x, y2: pointer.current.y });
+
         let dx = line.current.x2 - line.current.x1,
           dy = line.current.y2 - line.current.y1;
         angle.current = Math.atan2(dy, dx);
@@ -1861,6 +2097,7 @@ const App = () => {
       }
       if (canvasTool === "polyline") {
         if (isDrawing.current) {
+          mouseMoving.current = true;
           var endPoint = canvas.getPointer(opt);
           var evt = opt.e;
           if (evt.shiftKey === true) {
@@ -1894,6 +2131,7 @@ const App = () => {
       }
       if (canvasTool === "polygon") {
         if (isDrawing.current) {
+          mouseMoving.current = true;
           endPoint = canvas.getPointer(opt);
           line.current.set({
             x2: endPoint.x,
@@ -1903,6 +2141,7 @@ const App = () => {
         }
       }
       if (canvasTool === "rpolygon") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
         rpolygon.current.set({
           points: calcPolygonPoints(
@@ -1915,6 +2154,7 @@ const App = () => {
         canvas.renderAll();
       }
       if (canvasTool === "arc") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
         var radius =
           Math.max(
@@ -1940,12 +2180,20 @@ const App = () => {
         canvas.renderAll();
       }
       if (canvasTool === "circle") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
+        someValue.current =
+          Math.max(
+            Math.abs(origX.current - pointer.current.x),
+            Math.abs(origY.current - pointer.current.y)
+          ) / 20;
         radius =
           Math.max(
-            Math.abs(origY.current - pointer.current.y),
-            Math.abs(origX.current - pointer.current.x)
+            Math.abs(origX.current - pointer.current.x),
+            Math.abs(origY.current - pointer.current.y)
           ) / 2;
+        // radius = Math.abs(origX.current - pointer.current.x) / 2;
+        radius += someValue.current;
         if (radius > circle.current.strokeWidth) {
           radius -= circle.current.strokeWidth / 2;
         }
@@ -1963,9 +2211,17 @@ const App = () => {
         canvas.renderAll();
       }
       if (canvasTool === "ellipse") {
+        mouseMoving.current = true;
         pointer.current = canvas.getPointer(opt);
         var rx = Math.abs(origX.current - pointer.current.x) / 2;
         var ry = Math.abs(origY.current - pointer.current.y) / 2;
+        someValue.current =
+          Math.max(
+            Math.abs(origX.current - pointer.current.x),
+            Math.abs(origY.current - pointer.current.y)
+          ) / 20;
+        rx += someValue.current;
+        ry += someValue.current;
         if (rx > ellipse.current.strokeWidth) {
           rx -= ellipse.current.strokeWidth / 2;
         }
@@ -2009,8 +2265,11 @@ const App = () => {
     });
 
     setCanvas(canvas);
+
     return () => {
       canvas.dispose();
+      imgFileRef.current.removeEventListener("change", handleImageFileLoad);
+      window.removeEventListener("resize", handleResize);
     };
   }, [canvasRef, canvasTool, setCanvas]);
 
@@ -2035,6 +2294,7 @@ const App = () => {
     console.log(future);
   };
   const setShapeAttributes = (attributes) => {
+    if (canvas === undefined) return;
     var activeShape = canvas.getActiveObject();
     if (activeShape) {
       var Attributes = attributes || {};
@@ -2158,23 +2418,146 @@ const App = () => {
   };
 
   function handleKeyDown(event) {
-    if (event.key === "s") {
-      setActiveTool(event, "select");
-      return;
+    if (mouseMoving.current === false) {
+      if (event.key === "Escape") {
+        setCanvasTool("select");
+        setActiveTool(event, "select");
+        return;
+      }
+      if (event.key === "s") {
+        setCanvasTool("select");
+        setActiveTool(event, "select");
+        return;
+      }
+      if (event.key === "r") {
+        setCanvasTool("rect");
+        setActiveTool(event, "rect");
+        return;
+      }
+      if (event.key === "l") {
+        setCanvasTool("line");
+        setActiveTool(event, "line");
+        return;
+      }
+      if (event.key === "a") {
+        setCanvasTool("arrow");
+        setActiveTool(event, "arrow");
+        return;
+      }
+      if (event.key === "c") {
+        setCanvasTool("circle");
+        setActiveTool(event, "circle");
+        return;
+      }
+      if (event.key === "e") {
+        setCanvasTool("ellipse");
+        setActiveTool(event, "ellipse");
+        return;
+      }
+      if (event.key === "t") {
+        setCanvasTool("text");
+        setActiveTool(event, "text");
+        return;
+      }
+      if (event.key === "p") {
+        setCanvasTool("pen");
+        setActiveTool(event, "pen");
+        return;
+      }
+      if (event.key === "Delete") {
+        deleteObjects();
+        return;
+      }
+
+      if (event.ctrlKey && event.key === "z") {
+        if (past.length === 1) return;
+        onUndo();
+        return;
+      }
+      if (event.ctrlKey && event.key === "y") {
+        if (future.length === 0) return;
+        onRedo();
+        return;
+      }
+      if (event.ctrlKey && event.key === "[") {
+        var activeObj = canvas.getActiveObject();
+        canvas.sendBackwards(activeObj);
+        canvas.renderAll();
+      }
+      if (event.altKey && event.key === "[") {
+        activeObj = canvas.getActiveObject();
+        canvas.sendToBack(activeObj);
+        canvas.renderAll();
+      }
+      if (event.ctrlKey && event.key === "]") {
+        activeObj = canvas.getActiveObject();
+        canvas.bringForward(activeObj);
+        canvas.renderAll();
+      }
+      if (event.altKey && event.key === "]") {
+        activeObj = canvas.getActiveObject();
+        canvas.bringToFront(activeObj);
+        canvas.renderAll();
+      }
     }
-    if (event.key === "Delete") {
-      deleteObjects();
-      return;
-    }
-    if (event.ctrlKey && event.key === "z") {
-      if (past.length === 1) return;
-      onUndo();
-      return;
-    }
-    if (event.ctrlKey && event.key === "y") {
-      if (future.length === 0) return;
-      onRedo();
-      return;
+    if (mouseMoving.current === true) {
+      mouseMoving.current = false;
+      if (event.key === "Escape") {
+        if (canvasTool === "rect") {
+          canvas.remove(Rectangle.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+        if (canvasTool === "line") {
+          canvas.remove(line.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+        if (canvasTool === "arrow") {
+          canvas.remove(line.current);
+          canvas.remove(arrow.current);
+          newShape.current = true;
+          return;
+        }
+        if (canvasTool === "polyline") {
+          canvas.remove(line.current);
+          //canvas.remove(polyLine.current);
+          newShape.current = true;
+          return;
+        }
+        if (canvasTool === "polygon") {
+          canvas.remove(line.current);
+          newShape.current = true;
+          return;
+        }
+        if (canvasTool === "rpolygon") {
+          canvas.remove(rpolygon.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+        if (canvasTool === "arc") {
+          canvas.remove(circle.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+        if (canvasTool === "circle") {
+          canvas.remove(circle.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+        if (canvasTool === "ellipse") {
+          canvas.remove(ellipse.current);
+          newShape.current = true;
+          shapeCount.current--;
+          return;
+        }
+      }
+      //setActiveTool(event, "select");
     }
   }
 
@@ -2233,6 +2616,12 @@ const App = () => {
 
   return (
     <MediaQuery minDeviceWidth={1224}>
+      {/* <h1>Device Test!</h1>
+      {isDesktopOrLaptop && <p>You are a desktop or laptop</p>}
+      {isBigScreen && <p>You have a huge screen</p>}
+      {isTabletOrMobile && <p>You are a tablet or mobile phone</p>}
+      <p>Your are in {isPortrait ? "portrait" : "landscape"} orientation</p>
+      {isRetina && <p>You are retina</p>} */}
       <div
         ref={mainDiv}
         className="App"
@@ -2254,7 +2643,7 @@ const App = () => {
               disabled={past.length === 1}
             >
               <div className={tbStyles.tooltipDown}>
-                <img src="images/undo2.png" alt="Undo"></img>
+                <img src={imgUndo} alt="Undo"></img>
                 <span className={tbStyles.tooltiptextDown}>Undo</span>
               </div>
             </button>
@@ -2266,7 +2655,7 @@ const App = () => {
               disabled={future.length === 0}
             >
               <div className={tbStyles.tooltipDown}>
-                <img src="images/redo2.png" alt="Redo"></img>
+                <img src={imgRedo} alt="Redo"></img>
                 <span className={tbStyles.tooltiptextDown}>Redo</span>
               </div>
             </button>
@@ -2276,14 +2665,14 @@ const App = () => {
               id="del"
             >
               <div className={tbStyles.tooltipDown}>
-                <img src="images/delete2.png" alt="Delete"></img>
+                <img src={imgDelete} alt="Delete"></img>
                 <span className={tbStyles.tooltiptextDown}>Delete</span>
               </div>
             </button>
           </a>
           <div className={tbStyles.dropdown}>
             <button className={tbStyles.buttontoolbar} id="wList">
-              <img src="images/lineWidth2.png" alt="Line Width"></img>
+              <img src={imglineWidth} alt="Line Width"></img>
               <div id="wlDropDown" className={tbStyles.dropdowncontent}>
                 <a
                   href={url}
@@ -2294,7 +2683,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke1.png" alt="1"></img>
+                  <img src={imgStroke1} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2305,7 +2694,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke2.png" alt="2"></img>
+                  <img src={imgStroke2} alt="2"></img>
                 </a>
                 <a
                   href={url}
@@ -2316,7 +2705,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke4.png" alt="4"></img>
+                  <img src={imgStroke4} alt="4"></img>
                 </a>
                 <a
                   href={url}
@@ -2327,7 +2716,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke5.png" alt="5"></img>
+                  <img src={imgStroke5} alt="5"></img>
                 </a>
                 <a
                   href={url}
@@ -2338,7 +2727,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke10.png" alt="10"></img>
+                  <img src={imgStroke10} alt="10"></img>
                 </a>
                 <a
                   href={url}
@@ -2349,7 +2738,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke12.png" alt="12"></img>
+                  <img src={imgStroke12} alt="12"></img>
                 </a>
                 <a
                   href={url}
@@ -2360,7 +2749,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke15.png" alt="15"></img>
+                  <img src={imgStroke15} alt="15"></img>
                 </a>
                 <a
                   href={url}
@@ -2371,7 +2760,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke20.png" alt="20"></img>
+                  <img src={imgStroke20} alt="20"></img>
                 </a>
                 <a
                   href={url}
@@ -2382,14 +2771,14 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/stroke25.png" alt="25"></img>
+                  <img src={imgStroke25} alt="25"></img>
                 </a>
               </div>
             </button>
           </div>
           <div className={tbStyles.dropdown}>
             <button className={tbStyles.buttontoolbar} id="sList">
-              <img src="images/LineStyle2.png" alt="Line Style"></img>
+              <img src={imgLineStyle} alt="Line Style"></img>
               <div id="lsDropDown" className={tbStyles.dropdowncontent}>
                 <a
                   href={url}
@@ -2401,7 +2790,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle1.png" alt="1"></img>
+                  <img src={imgLineStyle1} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2413,7 +2802,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle2png.png" alt="1"></img>
+                  <img src={imgLineStyle2} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2425,7 +2814,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle3.png" alt="1"></img>
+                  <img src={imgLineStyle3} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2437,7 +2826,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle4.png" alt="1"></img>
+                  <img src={imgLineStyle4} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2449,7 +2838,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle5.png" alt="1"></img>
+                  <img src={imgLineStyle5} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2461,7 +2850,7 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle6.png" alt="1"></img>
+                  <img src={imgLineStyle6} alt="1"></img>
                 </a>
                 <a
                   href={url}
@@ -2473,14 +2862,14 @@ const App = () => {
                     });
                   }}
                 >
-                  <img src="images/lineStyle7.png" alt="1"></img>
+                  <img src={imgLineStyle7} alt="1"></img>
                 </a>
               </div>
             </button>
           </div>
           <button className={tbStyles.buttontoolbar} id="dropper">
             <div className={tbStyles.tooltipDown}>
-              <img src="images/dropper2.png" alt="Pick a color"></img>
+              <img src={imgDropper} alt="Pick a color"></img>
               <span className={tbStyles.tooltiptextDown}>Pick a color</span>
             </div>
           </button>
@@ -2514,6 +2903,21 @@ const App = () => {
           ></input>
           &nbsp;Stroke Color&nbsp;
           <div style={swatchStyles.pickerContainer}>
+            <Picker
+              setPickerColor={setPickerColorStroke}
+              type="Stroke"
+              ref={activeObjectStrokeRef}
+            />
+          </div>
+          &nbsp;Fill Color&nbsp;
+          <div style={swatchStyles.pickerContainer}>
+            <Picker
+              setPickerColor={setPickerColorFill}
+              type="Fill"
+              ref={activeObjectFillRef}
+            />
+          </div>
+          {/* <div style={swatchStyles.pickerContainer}>
             <div style={swatchStyles.swatch} onClick={StrokeSwatchClick}>
               <div style={swatchStyles.stroke} />
             </div>
@@ -2523,8 +2927,8 @@ const App = () => {
                 <SketchPicker color={stroke} onChange={StrokeSwatchChange} />
               </div>
             ) : null}
-          </div>
-          &nbsp;Fill Color&nbsp;
+          </div> */}
+          {/* &nbsp;Fill Color&nbsp;
           <div style={swatchStyles.pickerContainer}>
             <div style={swatchStyles.swatch} onClick={FillSwatchClick}>
               <div id="fillSwatch" style={swatchStyles.fill} />
@@ -2535,8 +2939,8 @@ const App = () => {
                 <SketchPicker color={fill} onChange={FillSwatchChange} />
               </div>
             ) : null}
-          </div>
-          &nbsp;HighlightText&nbsp;
+          </div> */}
+          {/* &nbsp;HighlightText&nbsp;
           <div style={swatchStyles.pickerContainer}>
             <div style={swatchStyles.swatch} onClick={HighlightSwatchClick}>
               <div style={swatchStyles.highlight} />
@@ -2553,8 +2957,8 @@ const App = () => {
                 />
               </div>
             ) : null}
-          </div>
-          &nbsp;
+          </div> */}
+          {/* &nbsp;
           <button
             id="noStroke"
             onClick={(e) => {
@@ -2565,7 +2969,7 @@ const App = () => {
             }}
           >
             <div className={tbStyles.tooltipDown}>
-              <img src="images/noStroke2.png" alt="No stroke"></img>
+              <img src={imgNoStroke} alt="No stroke"></img>
               <span className={tbStyles.tooltiptextDown}>Set No Stroke</span>
             </div>
           </button>
@@ -2580,10 +2984,10 @@ const App = () => {
             }}
           >
             <div className={tbStyles.tooltipDown}>
-              <img src="images/noFill2.png" alt="No fill"></img>
+              <img src={imgNoFill} alt="No fill"></img>
               <span className={tbStyles.tooltiptextDown}>Set No Fill</span>
             </div>
-          </button>
+          </button> */}
           &nbsp;Opacity
           <input
             type="range"
@@ -2660,6 +3064,12 @@ const App = () => {
               <option value="italic">Italic</option>
             </select>
           </label>
+          <input
+            ref={imgFileRef}
+            type="file"
+            id="FileUpload1"
+            style={{ display: "none" }}
+          />
         </div>
         <div id="lMenu" className={styles.menu}>
           <div className={styles.tableft}>
@@ -2672,7 +3082,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/FileAccess2.png" alt="FileAccess"></img>
+                <img src={imgFileAccess} alt="FileAccess"></img>
                 <span className={styles.tooltiptextleft}>File Access</span>
               </div>
             </button>
@@ -2685,7 +3095,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Canvas2.png" alt="Canvas Settings"></img>
+                <img src={imgCanvasSettings} alt="Canvas Settings"></img>
                 <span className={styles.tooltiptextleft}>Canvas Settings</span>
               </div>
             </button>
@@ -2698,7 +3108,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Layers2.png" alt="Layers"></img>
+                <img src={imgLayers} alt="Layers"></img>
                 <span className={styles.tooltiptextleft}>Layers</span>
               </div>
             </button>
@@ -2711,7 +3121,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Warehouse2.png" alt="Warehouse"></img>
+                <img src={imgWarehouse} alt="Warehouse"></img>
                 <span className={styles.tooltiptextleft}>Warehouse</span>
               </div>
             </button>
@@ -2724,7 +3134,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Phases2.png" alt="Phases"></img>
+                <img src={imgPhase} alt="Phases"></img>
                 <span className={styles.tooltiptextleft}>Phases</span>
               </div>
             </button>
@@ -2737,7 +3147,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Measure2.png" alt="Measurements"></img>
+                <img src={imgMeasurement} alt="Measurements"></img>
                 <span className={styles.tooltiptextleft}>Measures</span>
               </div>
             </button>
@@ -2750,14 +3160,21 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src="images/Animation2.png" alt="Animation"></img>
+                <img src={imgAnimation} alt="Animation"></img>
                 <span className={styles.tooltiptextleft}>Phase Player</span>
               </div>
             </button>
             <div className={styles.tabbar}></div>
           </div>
         </div>
-        <div id="Library" className={styles.library}>
+        <div
+          id="Library"
+          className={styles.library}
+          onClick={(e) => {
+            //document.getElementById("File").style.display = "none";
+            w3_openPanel(e, currentOpenPanel);
+          }}
+        >
           <div id="File" className={styles.File} style={{ display: "none" }}>
             File Access
             <span
@@ -2773,19 +3190,19 @@ const App = () => {
             <div className={styles.btngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/NewFile2.png" alt="NewFile"></img>
+                  <img src={imgNewFile} alt="NewFile"></img>
                 </button>
                 <span className={styles.tooltiptextB}>New File</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/OpenFile2.png" alt="OpenFile"></img>
+                  <img src={imgOpenFile} alt="OpenFile"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Open File</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/recentFile2.png" alt="RecentFile"></img>
+                  <img src={imgRecentFile} alt="RecentFile"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Recent File</span>
               </div>
@@ -2810,19 +3227,19 @@ const App = () => {
             <div className={styles.btngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/CanvasSize2.png" alt="CanvasSize"></img>
+                  <img src={imgCanvasSize} alt="CanvasSize"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Canvas Size</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/CanvasColor2.png" alt="CanvasColor"></img>
+                  <img src={imgCanvasColor} alt="CanvasColor"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Canvas Color</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/CanvasImage2.png" alt="CanvasImage"></img>
+                  <img src={imgCanvasImage} alt="CanvasImage"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Canvas Image</span>
               </div>
@@ -2847,46 +3264,43 @@ const App = () => {
             <div className={styles.sbtngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img
-                    src="images/InsertBefore2.png"
-                    alt="AddLayerBefore"
-                  ></img>
+                  <img src={imgLayerBefore} alt="AddLayerBefore"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Add Layer Before</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/InsertAfter2.png" alt="AddLayerAfter"></img>
+                  <img src={imgLayerAfter} alt="AddLayerAfter"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Add Layer After</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Up2.png" alt="LayerUp"></img>
+                  <img src={imgLayerUp} alt="LayerUp"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Layer Up</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Down2.png" alt="LayerDown"></img>
+                  <img src={imgLayerDown} alt="LayerDown"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Layer Down</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Hide2.png" alt="HideLayer"></img>
+                  <img src={imgLayerHide} alt="HideLayer"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Hide Layer</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Lock2.png" alt="LockLayer"></img>
+                  <img src={imgLayerLock} alt="LockLayer"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Lock Layer</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/SortAlpha2.png" alt="SortLayer"></img>
+                  <img src={imgLayerSort} alt="SortLayer"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Sort layer</span>
               </div>
@@ -2920,49 +3334,49 @@ const App = () => {
             <div className={styles.btngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Crane2.png" alt="Crane"></img>
+                  <img src={imgCrane} alt="Crane"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Crane</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Elevator2.png" alt="Elevator"></img>
+                  <img src={imgElevator} alt="Elevator"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Elevator</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/labels2.png" alt="Labels"></img>
+                  <img src={imgLabels} alt="Labels"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Labels</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/CloudTool2.png" alt="Cloud"></img>
+                  <img src={imgCloud2} alt="Cloud"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Cloud</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/CallOut2.png" alt="Callout"></img>
+                  <img src={imgCallout} alt="Callout"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Callout</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/wedge2.png" alt="Wedge"></img>
+                  <img src={imgWedge} alt="Wedge"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Wedge</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Ring2.png" alt="Ring"></img>
+                  <img src={imgRing} alt="Ring"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Ring</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/FilledArc2.png" alt="FilledArc"></img>
+                  <img src={imgFilledArc} alt="FilledArc"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Filled Arc</span>
               </div>
@@ -2987,25 +3401,25 @@ const App = () => {
             <div className={styles.btngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/NewPhase2.png" alt="NewPhase"></img>
+                  <img src={imgNewPhase} alt="NewPhase"></img>
                 </button>
                 <span className={styles.tooltiptextB}>NewPhase</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/StartDate2.png" alt="StartDate"></img>
+                  <img src={imgPhaseStart} alt="StartDate"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Start Date</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/EndDate2.png" alt="EndDate"></img>
+                  <img src={imgPhaseEnd} alt="EndDate"></img>
                 </button>
                 <span className={styles.tooltiptextB}>End Date</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/DeletePhase2.png" alt="DeletePhase"></img>
+                  <img src={imgPhaseDelete} alt="DeletePhase"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Delete Phase </span>
               </div>
@@ -3030,31 +3444,31 @@ const App = () => {
             <div className={styles.btngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/PageScale2.png" alt="PageScale"></img>
+                  <img src={imgPageScale} alt="PageScale"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Page Scale</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/setunit2.png" alt="SetUnits"></img>
+                  <img src={imgSetUnits} alt="SetUnits"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Set Units</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Length2.png" alt="Length"></img>
+                  <img src={imgLength} alt="Length"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Length</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Perimeter2.png" alt="Perimeter"></img>
+                  <img src={imgPerimeter} alt="Perimeter"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Perimeter</span>
               </div>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Area2.png" alt="Area"></img>
+                  <img src={imgArea} alt="Area"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Area</span>
               </div>
@@ -3093,7 +3507,7 @@ const App = () => {
             <div className={styles.sbtngroup}>
               <div className={styles.tooltip}>
                 <button>
-                  <img src="images/Play2.png" alt="Play"></img>
+                  <img src={imgPlay} alt="Play"></img>
                 </button>
                 <span className={styles.tooltiptextB}>Play/Stop</span>
               </div>
@@ -3134,8 +3548,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Select2.png"} alt="Select"></img>
-                <span className={styles.tooltiptext}>Selection</span>
+                <img src={imgSelection} alt="Select"></img>
+                <span className={styles.tooltiptext}>Selection [S]</span>
               </div>
             </button>
             <button
@@ -3148,8 +3562,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/TextBox2.png"} alt="TextBox"></img>
-                <span className={styles.tooltiptext}>Text</span>
+                <img src={imgText} alt="TextBox"></img>
+                <span className={styles.tooltiptext}>Text [T]</span>
               </div>
             </button>
             <button
@@ -3164,8 +3578,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/PenTool2.png"} alt="Pen"></img>
-                <span className={styles.tooltiptext}>Free-hand</span>
+                <img src={imgFreeHand} alt="Pen"></img>
+                <span className={styles.tooltiptext}>Free-hand [H]</span>
               </div>
             </button>
             <button
@@ -3178,7 +3592,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Cloud2.png"} alt="Cloud"></img>
+                <img src={imgCloud} alt="Cloud"></img>
                 <span className={styles.tooltiptext}>Cloud</span>
               </div>
             </button>
@@ -3192,7 +3606,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/CallOut2.png"} alt="Callout"></img>
+                <img src={imgCallout} alt="Callout"></img>
                 <span className={styles.tooltiptext}>Callout</span>
               </div>
             </button>
@@ -3206,8 +3620,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Image2.png"} alt="Edit"></img>
-                <span className={styles.tooltiptext}>Image Edit</span>
+                <img src={imgImageEdit} alt="Edit"></img>
+                <span className={styles.tooltiptext}>Image Edit [I]</span>
               </div>
             </button>
             <div className={styles.tabspace}></div>
@@ -3222,8 +3636,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Line2.png"} alt="Line"></img>
-                <span className={styles.tooltiptext}>Line</span>
+                <img src={imgLine} alt="Line"></img>
+                <span className={styles.tooltiptext}>Line [L]</span>
               </div>
             </button>
             <button
@@ -3240,8 +3654,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Polyline2.png"} alt="Polyline"></img>
-                <span className={styles.tooltiptext}>Polyline</span>
+                <img src={imgPolyline} alt="Polyline"></img>
+                <span className={styles.tooltiptext}>Polyline [P]</span>
               </div>
             </button>
             <button
@@ -3254,8 +3668,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Arrow2.png"} alt="Arrow"></img>
-                <span className={styles.tooltiptext}>Arrow</span>
+                <img src={imgArrow} alt="Arrow"></img>
+                <span className={styles.tooltiptext}>Arrow [A]</span>
               </div>
             </button>
             <button
@@ -3268,8 +3682,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Arc2.png"} alt="Arc"></img>
-                <span className={styles.tooltiptext}>Arc</span>
+                <img src={imgArc} alt="Arc"></img>
+                <span className={styles.tooltiptext}>Arc [Q]</span>
               </div>
             </button>
             <button
@@ -3287,8 +3701,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Rectangle2.png"} alt="Rectangle"></img>
-                <span className={styles.tooltiptext}>Rectangle.current</span>
+                <img src={imgRect} alt="Rectangle"></img>
+                <span className={styles.tooltiptext}>Rectangle [R]</span>
               </div>
             </button>
             <button
@@ -3301,8 +3715,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Polygon2.png"} alt="Polygon"></img>
-                <span className={styles.tooltiptext}>Polygon</span>
+                <img src={imgPolygon} alt="Polygon"></img>
+                <span className={styles.tooltiptext}>Polygon [G]</span>
               </div>
             </button>
             <button
@@ -3315,8 +3729,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/RPolygon2.png"} alt="Regular Polygon"></img>
-                <span className={styles.tooltiptext}>Regular Polygon</span>
+                <img src={imgRPolygon} alt="Regular Polygon"></img>
+                <span className={styles.tooltiptext}>Regular Polygon [U]</span>
               </div>
             </button>
             <button
@@ -3329,8 +3743,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Circle2.png"} alt="Circle"></img>
-                <span className={styles.tooltiptext}>Circle</span>
+                <img src={imgCircle} alt="Circle"></img>
+                <span className={styles.tooltiptext}>Circle [C]</span>
               </div>
             </button>
             <button
@@ -3343,8 +3757,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Ellipse2.png"} alt="Ellipse"></img>
-                <span className={styles.tooltiptext}>Ellipse</span>
+                <img src={imgEllipse} alt="Ellipse"></img>
+                <span className={styles.tooltiptext}>Ellipse {"  "} [E]</span>
               </div>
             </button>
             <div className={styles.tabspace}></div>
@@ -3358,8 +3772,8 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Dimension2.png"} alt="Dimension"></img>
-                <span className={styles.tooltiptext}>Dimension</span>
+                <img src={imgDimension} alt="Dimension"></img>
+                <span className={styles.tooltiptext}>Dimension [D]</span>
               </div>
             </button>
 
@@ -3373,7 +3787,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Area2.png"} alt="Area"></img>
+                <img src={imgArea} alt="Area"></img>
                 <span className={styles.tooltiptext}>Area</span>
               </div>
             </button>
@@ -3387,7 +3801,7 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Length2.png"} alt="Length"></img>
+                <img src={imgLength} alt="Length"></img>
                 <span className={styles.tooltiptext}>Length</span>
               </div>
             </button>
@@ -3401,18 +3815,34 @@ const App = () => {
               }}
             >
               <div className={styles.tooltip}>
-                <img src={"images/Perimeter2.png"} alt="Perimeter"></img>
+                <img src={imgPerimeter} alt="Perimeter"></img>
                 <span className={styles.tooltiptext}>Perimeter</span>
               </div>
             </button>
           </div>
         </div>
-        <div>
+        <div ref={containerRef}>
           <canvas
             ref={canvasRef}
             id="my-fabric-canvas"
-            width="1191"
-            height="842"
+            width={
+              isBigScreen
+                ? 1191
+                : isDesktopOrLaptop
+                ? 1086
+                : isTabletOrMobile
+                ? 960
+                : 640
+            }
+            height={
+              isBigScreen
+                ? 842
+                : isDesktopOrLaptop
+                ? 768
+                : isTabletOrMobile
+                ? 540
+                : 320
+            }
           ></canvas>
         </div>
       </div>

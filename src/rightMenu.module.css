@@ -216,6 +216,16 @@ li {
   border-style: solid;
   border-color: rgb(224, 224, 224);
 }
+/* .backdropMenu{
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: "none";
+    background: p.backdrop ? "rgba(0, 0, 0, 0.1)" : "transparent",
+} */
 .File {
   position: relative;
   left: 0;
