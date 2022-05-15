@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/elp-app/static/css/main.9064b5b0.chunk.css",
-    "main.js": "/elp-app/static/js/main.c9aa3a9d.chunk.js",
-    "main.js.map": "/elp-app/static/js/main.c9aa3a9d.chunk.js.map",
+    "main.js": "/elp-app/static/js/main.64c70f07.chunk.js",
+    "main.js.map": "/elp-app/static/js/main.64c70f07.chunk.js.map",
     "runtime-main.js": "/elp-app/static/js/runtime-main.f9654b49.js",
     "runtime-main.js.map": "/elp-app/static/js/runtime-main.f9654b49.js.map",
     "static/js/2.663c3c37.chunk.js": "/elp-app/static/js/2.663c3c37.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.f9654b49.js",
     "static/js/2.663c3c37.chunk.js",
     "static/css/main.9064b5b0.chunk.css",
-    "static/js/main.c9aa3a9d.chunk.js"
+    "static/js/main.64c70f07.chunk.js"
   ]
 }
